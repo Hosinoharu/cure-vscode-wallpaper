@@ -2,11 +2,13 @@
 
 
 
-这是一个 `VSCode` 插件，用于设置 `VSCode` 背景图片，如下：
+这是一个 `VSCode` 插件，用于设置 `VSCode` 背景图片。
 
 ![image-20260512174339787](assets/image-20260512174339787.png)
 
 # Usage
+
+插件没有发布到 `VSCode Marketplace` 中（我不会，且很懒），需要手动安装。
 
 打开插件的配置，设置图片所在的目录，然后执行命令 `Set Wallpaper` 立即设置壁纸。
 
