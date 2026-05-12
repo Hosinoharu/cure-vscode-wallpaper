@@ -148,7 +148,8 @@ function inject_function(image_url: string) {
         mask.style.zIndex = "2";
         mask.style.pointerEvents = "none";
         mask.style.backgroundSize = "cover";
-        mask.style.mixBlendMode = "lighten";
+        // 这个加上就太晃眼了
+        // mask.style.mixBlendMode = "lighten";
         mask.style.backgroundImage = `url(${image_url})`;
 
         document.body.appendChild(mask);
@@ -212,6 +213,7 @@ export function set_wallpaper() {
 
 /** 取消设置 VSCode 背景图片 */
 export function reset_wallpaper() {
+    del_inject_script_file();
     uninstall_script_from_html();
 }
 
