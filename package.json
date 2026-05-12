@@ -1,0 +1,66 @@
+{
+    "name": "cure-vscode-wallpaper",
+    "displayName": "cure-vscode-wallpaper",
+    "description": "Wallpaper for vscode",
+    "version": "1.0.0",
+    "author": "Hosinoharu",
+    "publisher": "Hosinoharu",
+    "license": "MIT",
+    "repository": "https://github.com/Hosinoharu/cure-vscode-wallpaper",
+    "engines": {
+        "vscode": "^1.118.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "icon": "icons/icon-128.png",
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./out/extension.js",
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.118.0",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "22.x",
+        "typescript-eslint": "^8.56.1",
+        "eslint": "^9.39.3",
+        "typescript": "^5.9.3",
+        "@vscode/test-cli": "^0.0.12",
+        "@vscode/test-electron": "^2.5.2"
+    },
+    "contributes": {
+        "commands": [
+            {
+                "command": "cure-vscode-wallpaper.set-wallpaper",
+                "title": "Cure Wallpaper - Set Wallpaper Randomly"
+            },
+            {
+                "command": "cure-vscode-wallpaper.reset-wallpaper",
+                "title": "Cure Wallpaper - Reset Wallpaper"
+            }
+        ],
+        "configuration": {
+            "title": "Cure Wallpaper",
+            "properties": {
+                "cure-vscode-wallpaper.enableWallpaper": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "启用插件"
+                },
+                "cure-vscode-wallpaper.imagePath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "指定图片目录，将从中随机取出图片作为壁纸"
+                }
+            }
+        }
+    }
+}
