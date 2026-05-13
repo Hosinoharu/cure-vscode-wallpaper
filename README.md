@@ -8,9 +8,9 @@
 
 # Usage
 
-插件没有发布到 `VSCode Marketplace` 中（我不会，且很懒），需要手动安装。
+插件没有发布到 `VSCode Marketplace` 中，需要手动安装。
 
-打开插件的配置，设置图片所在的目录，然后执行命令 `Set Wallpaper` 立即设置壁纸。
+打开插件的配置，启用功能、设置图片所在的目录，然后执行命令 `Set Wallpaper` 立即设置壁纸。
 
 之后，`VSCode` **每次启动时，会从图片目录中随机选一张图片作为壁纸**，
 
@@ -30,6 +30,8 @@
 >   [!NOTE]
 >
 >   插件会修改 `VSCode` 自身的文件，具体见[about design · Hosinoharu/cure-vscode-wallpaper Wiki](https://github.com/Hosinoharu/cure-vscode-wallpaper/wiki/about-design)，所以会弹窗提示 `VSCode` 已经损坏，无需担心。
+>
+>   每次 `VSCode` 更新之后，因为修改的文件被重置，所以需要重新执行 `Set Wallpaper` 命令设置壁纸。
 
 # Attribution
 
