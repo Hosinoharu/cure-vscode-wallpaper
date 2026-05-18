@@ -34,8 +34,8 @@ const inject_filename = settings.extension_name + "-inject-file.js";
 
 /** 要注入的文件的完整路径 */
 const inject_file_path = path.join(workbench_path, inject_filename);
-/** agents windows 的 html 中需要使用相对路径来进入上述要生成的 js 文件哟 */
-const agent_relative_file_path = path.relative(agents_path, inject_file_path);
+/** 注入到 agents window 的、js 文件路径 */
+const inject_file_path_for_agents = path.join(agents_path, inject_filename);
 
 // #endregion
 
@@ -108,21 +108,21 @@ function uninstall_script_from_html(html: string): boolean {
 
 //#region 操作注入的文件
 
-/** 传入图片的路径，生成一个注入的文件！ */
-function gen_inject_script_file(image_path: string) {
+/** 传入图片的路径、js 路径，生成一个注入的文件！ */
+function gen_inject_script_file(image_path: string, js_path: string) {
     const image_url = path_to_vscode_file_protocol(image_path);
     // #cure-tip 构建立即调用函数，传入图片地址
     const content = `;(${inject_function.toString()})("${image_url}");`;
-    fs.writeFileSync(inject_file_path, content, "utf-8");
+    fs.writeFileSync(js_path, content, "utf-8");
     logger.log("generate inject script file");
 }
 
 /** 删除生成的注入文件 */
-function del_inject_script_file() {
-    if (fs.existsSync(inject_file_path)) {
-        fs.unlinkSync(inject_file_path);
+function del_inject_script_file(js_path: string) {
+    if (fs.existsSync(js_path)) {
+        fs.unlinkSync(js_path);
+        logger.log("reset background image and delete inject file");
     }
-    logger.log("reset background image and delete inject file");
 }
 
 /** 这个函数的内容（字符串形式）就是要注入的内容，在这里不能被调用
@@ -206,24 +206,37 @@ export function set_wallpaper() {
         throw new Error(`image path not exist: ${impage_path_setting}`);
     }
 
-    const image_path = get_one_image_path(impage_path_setting);
-    if (!image_path) {
-        throw new Error("no image found in the image path");
+    // #cure-tip 因为注入的文件放置到了对应的目录下，所以可以直接使用 ./ 访问
+    // 先修改 html 再创建注入脚本，这样可以避免多余的存在性检查
+    if (install_script_to_html(workbench_html_file, `./${inject_filename}`)) {
+        const image_path = get_one_image_path(impage_path_setting);
+        if (!image_path) {
+            throw new Error("no image found in the image path");
+        }
+
+        logger.log(`set wallpaper: ${image_path}`);
+        gen_inject_script_file(image_path, inject_file_path);
     }
 
-    logger.log(`set wallpaper: ${image_path}`);
+    if (install_script_to_html(agents_html_file, `./${inject_filename}`)) {
+        const image_path = get_one_image_path(impage_path_setting);
+        if (!image_path) {
+            throw new Error("no image found in the image path");
+        }
 
-    gen_inject_script_file(image_path);
-    // #cure-tip 因为注入的文件放置到了对应的目录下，所以可以直接使用 ./ 访问
-    install_script_to_html(workbench_html_file, `./${inject_filename}`);
-    install_script_to_html(agents_html_file, agent_relative_file_path);
+        logger.log(`set wallpaper for agents window: ${image_path}`);
+        gen_inject_script_file(image_path, inject_file_path_for_agents);
+    }
 }
 
 /** 取消设置 VSCode 背景图片 */
 export function reset_wallpaper() {
-    del_inject_script_file();
-    uninstall_script_from_html(workbench_html_file);
-    uninstall_script_from_html(agents_html_file);
+    if (uninstall_script_from_html(workbench_html_file)) {
+        del_inject_script_file(inject_file_path);
+    }
+    if (uninstall_script_from_html(agents_html_file)) {
+        del_inject_script_file(inject_file_path_for_agents);
+    }
 }
 
 // #endregion
