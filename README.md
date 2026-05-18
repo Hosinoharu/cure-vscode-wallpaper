@@ -6,6 +6,10 @@
 
 ![image-20260512174339787](assets/image-20260512174339787.png)
 
+`Agents Window` 也有壁纸。
+
+![image-20260518144312522](assets/image-20260518144312522.png)
+
 # Usage
 
 插件没有发布到 `VSCode Marketplace` 中，需要手动安装。
@@ -16,7 +20,7 @@
 
 插件提供两个命令：
 
--   `Set Wallpaper`：随机选一张图片作为壁纸，会重新加载 `VSCode` 让其生效
+-   `Set Wallpaper`：随机选一张图片作为壁纸，会重新加载 `VSCode` 让其生效 —— 插件功能未开启时，此命令无效
 -   `Reset Wallpaper`：重置壁纸 —— **删除插件之前一定要先还原**，也会重新加载 `VSCode` 让其生效
 
 插件就只有这一个简单的功能。

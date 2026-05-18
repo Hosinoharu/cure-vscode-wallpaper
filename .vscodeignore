@@ -12,3 +12,5 @@ vsc-extension-quickstart.md
 assets/
 temp
 doc
+.github/
+.git/
