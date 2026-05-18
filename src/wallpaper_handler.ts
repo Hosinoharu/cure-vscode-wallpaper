@@ -14,13 +14,14 @@ const logger = new CureLogger("file_handler");
 
 // #region constants
 
-const workbench_path = path.join(
-    vscode.env.appRoot,
-    "out/vs/code/electron-browser/workbench",
-);
+const base_path = path.join(vscode.env.appRoot, "out/vs");
+const workbench_path = path.join(base_path, "code/electron-browser/workbench");
+const agents_path = path.join(base_path, "sessions/electron-browser");
 
 /** 要修改的文件的路径 */
 const workbench_html_file = path.join(workbench_path, "workbench.html");
+/** Agents Window HTML 文件路径 */
+const agents_html_file = path.join(agents_path, "sessions.html");
 
 /** 因为要在 html 中插入一个 script ，所以使用该 id 标记，确保只会写入一次。
  *
@@ -33,12 +34,14 @@ const inject_filename = settings.extension_name + "-inject-file.js";
 
 /** 要注入的文件的完整路径 */
 const inject_file_path = path.join(workbench_path, inject_filename);
+/** agents windows 的 html 中需要使用相对路径来进入上述要生成的 js 文件哟 */
+const agent_relative_file_path = path.relative(agents_path, inject_file_path);
 
 // #endregion
 
 // #region 修改 vscode 的文件
 
-/** 注入 JS 文件到  workbench.html 中。
+/** 注入 JS 文件到  html 中。
  *
  * 重复注入将更新时间戳。
  *
@@ -46,16 +49,19 @@ const inject_file_path = path.join(workbench_path, inject_filename);
  * 这涉及到【缓存问题】。在我调用 vscode API 重新加载 vscode（并不是关闭、再打开 vscode）时，
  * 并没有使用最新的文件，为了禁用缓存，所以在 html 中插入 script 时，尾部使用 ?curetime=xxx 来禁用缓存。
  *
+ * @param html 要注入的 html 文件路径
+ * @param js_path 要注入的 js 文件路径，作为 `script` 的 `src` 属性值。 可以是相对路径
+ *
  * @returns 注入成功则返回 true
  *
  */
-function install_script_to_html(): boolean {
-    if (!fs.existsSync(workbench_html_file)) {
-        logger.error(`html file not found: ${workbench_html_file}`);
+function install_script_to_html(html: string, js_path: string): boolean {
+    if (!fs.existsSync(html)) {
+        logger.error(`html file not found: ${html}`);
         return false;
     }
 
-    const file_content = fs.readFileSync(workbench_html_file, "utf-8");
+    const file_content = fs.readFileSync(html, "utf-8");
     let new_content = "";
 
     // #cure-tip 重复注入
@@ -68,24 +74,24 @@ function install_script_to_html(): boolean {
         logger.log(`update inject script curetime`);
     } else {
         // #cure-warn 因为注入的文件放置到了对应的目录下，所以可以直接使用 ./ 访问
-        const script_tag = `<script id="${scriptId}" src="./${inject_filename}?curetime=${Date.now()}"></script>`;
+        const script_tag = `<script id="${scriptId}" src="${js_path}?curetime=${Date.now()}"></script>`;
         // 注意写入到底部！！！
         new_content = file_content.replace("</html>", `${script_tag}</html>`);
-        logger.log(`inject script to workbench.html: ${inject_file_path}`);
+        logger.log(`inject script to workbench.html: ${js_path}`);
     }
 
-    fs.writeFileSync(workbench_html_file, new_content, "utf-8");
+    fs.writeFileSync(html, new_content, "utf-8");
     return true;
 }
 
 /** 取消注入 */
-function uninstall_script_from_html(): boolean {
-    if (!fs.existsSync(workbench_html_file)) {
-        logger.error(`workbench.html file not found: ${workbench_html_file}`);
+function uninstall_script_from_html(html: string): boolean {
+    if (!fs.existsSync(html)) {
+        logger.error(`workbench.html file not found: ${html}`);
         return false;
     }
 
-    const file_content = fs.readFileSync(workbench_html_file, "utf-8");
+    const file_content = fs.readFileSync(html, "utf-8");
     if (!file_content.includes(scriptId)) {
         return true;
     }
@@ -93,7 +99,7 @@ function uninstall_script_from_html(): boolean {
     const pattern = new RegExp(`<script id="${scriptId}" src=".*"></script>`);
     const new_content = file_content.replace(pattern, "");
 
-    fs.writeFileSync(workbench_html_file, new_content, "utf-8");
+    fs.writeFileSync(html, new_content, "utf-8");
     logger.log(`uninstall script from workbench.html`);
     return true;
 }
@@ -208,13 +214,16 @@ export function set_wallpaper() {
     logger.log(`set wallpaper: ${image_path}`);
 
     gen_inject_script_file(image_path);
-    install_script_to_html();
+    // #cure-tip 因为注入的文件放置到了对应的目录下，所以可以直接使用 ./ 访问
+    install_script_to_html(workbench_html_file, `./${inject_filename}`);
+    install_script_to_html(agents_html_file, agent_relative_file_path);
 }
 
 /** 取消设置 VSCode 背景图片 */
 export function reset_wallpaper() {
     del_inject_script_file();
-    uninstall_script_from_html();
+    uninstall_script_from_html(workbench_html_file);
+    uninstall_script_from_html(agents_html_file);
 }
 
 // #endregion
